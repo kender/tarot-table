@@ -15,6 +15,8 @@ object Boilerplate extends AutoPlugin {
     lazy val slf4j_api = slf4j("api")
     lazy val logback = "ch.qos.logback" % "logback-classic" % "1.1.2"
 
+    lazy val scala_xml = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
+
     lazy val logging =
       slf4j_api :: logback :: Nil
   }

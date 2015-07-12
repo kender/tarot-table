@@ -1,14 +1,23 @@
 package me.enkode.tt.es
 
-import akka.http.scaladsl.server._
-import me.enkode.tt.http.Routeable
+import java.time.Instant
 
-class EventServerRoutes extends Routeable with Directives {
+import akka.http.scaladsl.server._
+import me.enkode.tt.http.{JavaTimeMarshalling, Routeable}
+
+trait EventServerRoutes extends Routeable with Directives with JavaTimeMarshalling {
+  def sessions: Sessions
+
   val pollSessionChannel: Route = {
-    (get & path("events" / "session" / Segment / "channel" / Segment)) { (sessionId, channelId) ⇒
-      complete(s"$sessionId $channelId")
+    (get & path("events" / "session" / Segment / "channel" / Segment) & parameter('since.as[Instant].?)) { (sessionId, channelId, since) ⇒
+      complete(s"$sessionId $channelId $since")
     }
   }
 
   override def routes = pollSessionChannel :: Nil
+}
+
+object EventServerRoutes {
+  class EventServerRoutesImpl(val sessions: Sessions) extends EventServerRoutes
+  def apply(sessions: Sessions): EventServerRoutes = new EventServerRoutesImpl(sessions)
 }

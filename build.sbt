@@ -7,12 +7,16 @@ lazy val `http-common` = project
     )
   )
 
-
 lazy val `ui-server` = project
   .dependsOn(`http-common`)
 
 lazy val `event-server` = project
   .dependsOn(`http-common`)
+  .settings(
+    libraryDependencies ++= Seq(
+      Boilerplate.Modules.scala_xml
+    )
+  )
 
 lazy val `tarot-table` = project.in(file("."))
   .dependsOn(`event-server`, `ui-server`)
