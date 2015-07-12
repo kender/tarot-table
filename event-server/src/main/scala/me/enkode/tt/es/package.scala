@@ -1,29 +1,33 @@
 package me.enkode.tt
 
 import java.time.Instant
+import java.util.UUID
 
 import scala.xml.NodeSeq
 
 package object es {
-  type SessionId = String
-  type SessionActorId = String
-  type AssetId = String
+  type SessionId = UUID
+  type SessionActorId = UUID
+  type AssetId = UUID
+  type SessionObjectId = UUID
   type RichText = NodeSeq
 
   trait Named {
     def name = getClass.getSimpleName
   }
 
+  trait Lookup[T <: Named] {
+    def all: Set[T]
+    def findByName(name: String): Option[T] = all.find(_.name.toLowerCase == name.toLowerCase)
+  }
+
   sealed trait SessionActorType extends Named
-  object SessionActorType {
+  object SessionActorType extends Lookup[SessionActorType] {
     case object Human extends SessionActorType
     case object System extends  SessionActorType
     case object Clock extends SessionActorType
 
-    val all = Set(Human, System, Clock)
-    def findByName(name: String): Option[SessionActorType] = {
-      all.find(_.name.toLowerCase == name.toLowerCase)
-    }
+    override val all = Set(Human, System, Clock)
   }
 
   case class SessionActor(sessionActorType: SessionActorType, id: SessionActorId)
@@ -31,6 +35,7 @@ package object es {
   case class Geometry(x: Double, y: Double, z: Double, θ: Double)
 
   sealed trait SessionObject extends Named {
+    def id: SessionObjectId
     def createdAt: Instant
     def createdBy: SessionActorType
     def modifiedAt: Instant
@@ -38,9 +43,9 @@ package object es {
   }
 
   object SessionObject {
-    case class Interactable(assetId: AssetId, geometry: Geometry, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
-    case class Say(sessionActor: SessionActor, text: RichText, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
-    case class Emote(sessionActor: SessionActor, assetId: AssetId, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
+    case class Interactable(id: SessionObjectId, assetId: AssetId, geometry: Geometry, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
+    case class Say(id: SessionObjectId, sessionActor: SessionActor, text: RichText, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
+    case class Emote(id: SessionObjectId, sessionActor: SessionActor, assetId: AssetId, createdAt: Instant, createdBy: SessionActorType, modifiedAt: Instant, modifiedBy: SessionActorType) extends SessionObject
   }
 
   case class SessionState(objects: Set[SessionObject]) {
@@ -49,5 +54,15 @@ package object es {
     }
   }
 
-  case class Session(id: SessionId, creator: SessionActor, participants: Set[SessionActor], state: SessionState)
+  sealed trait Participation
+  object Participation extends Lookup[Participation] {
+    case object Creator extends Participation
+    case object Full extends Participation
+    case object Chat extends Participation
+    case object View extends Participation
+    override val all = Set(Creator, Full, Chat, View)
+  }
+  case class SessionParticipant(actor: SessionActor, participation: Participation)
+
+  case class Session(id: SessionId, creator: SessionActor, participants: Set[SessionParticipant], state: SessionState)
 }
