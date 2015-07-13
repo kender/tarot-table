@@ -35,6 +35,10 @@ class TarotTable extends Routeable {
     binding map { bound ⇒
       println(s"${classOf[TarotTable].getSimpleName} running at ${bound.localAddress}")
     }
+
+    actorSystem registerOnTermination {
+      binding.map(_.unbind())
+    }
   }
 
   override def routes = getRoot :: Nil

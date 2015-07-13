@@ -1,20 +1,35 @@
 package me.enkode.tt.es
 
 import java.time.Instant
+import java.util.UUID
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
-import me.enkode.tt.http.{JavaTimeMarshalling, Routeable}
+import me.enkode.tt.http.{UuidUtils, JavaTimeMarshalling, Routeable}
 
-trait EventServerRoutes extends Routeable with Directives with JavaTimeMarshalling {
+import scala.util.{Failure, Success}
+
+trait EventServerRoutes extends Routeable with Directives with JavaTimeMarshalling with UuidUtils with SprayJsonSupport {
   def sessions: Sessions
 
   val pollSessionChannel: Route = {
-    (get & path("events" / "session" / Segment / "channel" / Segment) & parameter('since.as[Instant].?)) { (sessionId, channelId, since) ⇒
-      complete(s"$sessionId $channelId $since")
+    (get & path("events" / "session" / Segment ) & parameter('since.as[Instant].?)) { (sessionId, since) ⇒
+      onComplete(sessions.find(fromBase64(sessionId))) {
+        case Success(None) ⇒ complete(StatusCodes.NotFound)
+        case Success(Some(session)) ⇒ complete(session)
+        case Failure(t) ⇒ complete(StatusCodes.InternalServerError, t)
+      }
     }
   }
 
-  override def routes = pollSessionChannel :: Nil
+  val nextUuid: Route = {
+    (get & path("uuid")) {
+      complete(toBase64(UUID.randomUUID()))
+    }
+  }
+
+  override def routes = pollSessionChannel :: nextUuid :: Nil
 }
 
 object EventServerRoutes {
