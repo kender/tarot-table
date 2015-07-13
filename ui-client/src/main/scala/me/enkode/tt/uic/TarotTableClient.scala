@@ -2,6 +2,7 @@ package me.enkode.tt.uic
 
 import org.scalajs.dom
 
+import scala.scalajs.js.JSON
 import scala.scalajs.js.annotation.JSExport
 
 @JSExport("TarotTableClient")
@@ -20,8 +21,7 @@ object TarotTableClient {
     child.appendChild(document.createTextNode("foo"))
     root.appendChild(child)
     Ajax.get("/events/session/ekJMKcNgTnO4NxIfS0dd1Q") map { req ⇒
-      println(req.responseText)
+      console.log(JSON.parse(req.responseText))
     }
-    println("oh yeah")
   }
 }
