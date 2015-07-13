@@ -20,7 +20,7 @@ lazy val `ui-server` = project
   .dependsOn(`http-common`, `ui-client`)
   .settings(
     gatherJavaScripts := {
-      (org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport.fastOptJS in(`ui-client`, Compile)).value
+      (org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport.fullOptJS in(`ui-client`, Compile)).value
       val outputDir = (classDirectory in Compile).value / "js"
       (Seq.empty[File] /: List("*.js", "*.map")) { (files, pattern) ⇒
         files ++ ((crossTarget in `ui-client`).value ** pattern).get
@@ -49,6 +49,7 @@ lazy val `event-server` = project
 
 lazy val `tarot-table` = project.in(file("."))
   .dependsOn(`event-server`, `ui-server`)
+  .aggregate(`event-server`, `ui-server`)
   .settings(Revolver.settings)
   .settings(
     libraryDependencies ++= Seq(
