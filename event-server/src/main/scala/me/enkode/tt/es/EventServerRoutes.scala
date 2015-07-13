@@ -15,7 +15,7 @@ trait EventServerRoutes extends Routeable with Directives with JavaTimeMarshalli
 
   val pollSessionChannel: Route = {
     (get & path("events" / "session" / Segment ) & parameter('since.as[Instant].?)) { (sessionId, since) ⇒
-      onComplete(sessions.find(fromBase64(sessionId))) {
+      onComplete(sessions.find(fromBase64(sessionId), since)) {
         case Success(None) ⇒ complete(StatusCodes.NotFound)
         case Success(Some(session)) ⇒ complete(session)
         case Failure(t) ⇒ complete(StatusCodes.InternalServerError, t)

@@ -12,6 +12,7 @@ trait JavaTimeMarshalling {
   implicit object InstantFromIntUnmarshaller extends Unmarshaller[Long, Instant] {
     override def apply(value: Long)(implicit ec: ExecutionContext) = Future { Instant.ofEpochMilli(value) }
   }
+
   implicit object InstantFromStringUnmarshaller extends FromStringUnmarshaller[Instant] {
     override def apply(value: String)(implicit ec: ExecutionContext) = Future {
       Try {
@@ -21,8 +22,6 @@ trait JavaTimeMarshalling {
       }
     }
   }
-
-
 }
 
 object JavaTimeMarshalling extends JavaTimeMarshalling
