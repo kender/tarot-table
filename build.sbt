@@ -1,4 +1,10 @@
 lazy val `ui-client` = project
+  .enablePlugins(ScalaJSPlugin)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+    )
+  )
 
 lazy val `http-common` = project
   .settings(
@@ -9,8 +15,26 @@ lazy val `http-common` = project
     )
   )
 
+
 lazy val `ui-server` = project
-  .dependsOn(`http-common`)
+  .dependsOn(`http-common`, `ui-client`)
+  .settings(
+    gatherJavaScripts := {
+      (org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport.fastOptJS in(`ui-client`, Compile)).value
+      val outputDir = (classDirectory in Compile).value / "js"
+      (Seq.empty[File] /: List("*.js", "*.map")) { (files, pattern) ⇒
+        files ++ ((crossTarget in `ui-client`).value ** pattern).get
+      } foreach { source ⇒
+        streams.value.log.info(s"$source ⇒ ${outputDir / source.name}")
+        IO.copyFile(source, outputDir / source.name)
+      }
+    },
+    compile in Compile := {
+      gatherJavaScripts.value
+      (compile in Compile).value
+    }
+  )
+
 
 lazy val `event-server` = project
   .dependsOn(`http-common`)
@@ -32,3 +56,5 @@ lazy val `tarot-table` = project.in(file("."))
       Boilerplate.Modules.akka("http-experimental", Boilerplate.Modules.akkaStreamsVersion)
     ) ++ Boilerplate.Modules.logging
   )
+
+lazy val gatherJavaScripts = taskKey[Unit]("get the output of building js")

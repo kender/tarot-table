@@ -1,14 +1,19 @@
 package me.enkode.tt.uis
 
-import me.enkode.tt.http.Routeable
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
+import me.enkode.tt.http.Routeable
 
 trait UiServerRoutes extends Routeable {
-  val getResource = (get & path("ui" / "resource" / RestPath)) { resource ⇒
-    complete(resource.toString())
+  val getResource: Route = (get & path("ui" / RestPath)) { resource ⇒
+    getFromResource(s"content/$resource")
   }
 
-  override def routes = getResource :: Nil
+  val getJavaScript: Route = (get & path("js"/ RestPath)) { resource ⇒
+    getFromResource(s"js/$resource")
+  }
+
+  override def routes = getResource :: getJavaScript :: Nil
 }
 
 object UiServerRoutes {
