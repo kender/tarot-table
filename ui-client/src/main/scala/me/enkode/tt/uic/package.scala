@@ -12,7 +12,7 @@ package object uic {
       element
     }
 
-    def appendChildren(children: Seq[dom.Node]): dom.Element = {
+    def appendChildren(children: dom.Node*): dom.Element = {
       children.foreach(element.appendChild)
       element
     }
@@ -30,6 +30,15 @@ package object uic {
       val input = document.createElement("input").asInstanceOf[dom.html.Input]
       input.setAttributes(Map("id" → id, "type" → inputType))
       input
+    }
+  }
+
+  implicit class HTMLElementHelper(val htmlElement: dom.html.Element) extends AnyVal {
+    def styles(mods: (dom.css.StyleDeclaration ⇒ Unit)*): dom.html.Element = {
+      mods foreach { mod ⇒
+        mod(htmlElement.style)
+      }
+      htmlElement
     }
   }
 }

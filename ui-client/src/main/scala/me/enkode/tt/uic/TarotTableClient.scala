@@ -15,17 +15,16 @@ object TarotTableClient {
   .queue
 
   def generateUuid(): dom.Element = {
-    val form = document.createElement("div")
-
     val input = document.createInput("uuid")
+      .styles(_.fontFamily = "monospace", _.width = "23ch", _.color = "blue")
+
     val button = document.createButton("generate") { e ⇒
       Ajax.get("/uuid") map { req ⇒
         input.setAttribute("value", req.responseText)
       }
     }
 
-    form.appendChildren(List(input, button))
-    form
+    document.createElement("div").appendChildren(input, button)
   }
 
   @JSExport
