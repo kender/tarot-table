@@ -10,5 +10,4 @@ package object es {
   type AssetId = UUID
   type SessionObjectId = UUID
   type RichText = NodeSeq
-  type Meta = Map[String, String]
 }

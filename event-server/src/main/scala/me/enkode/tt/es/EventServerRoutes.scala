@@ -6,19 +6,16 @@ import java.util.UUID
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
-import me.enkode.tt.http.{UuidUtils, JavaTimeMarshalling, Routeable}
-
-import scala.util.{Failure, Success}
+import me.enkode.tt.http.{JavaTimeMarshalling, Routeable, UuidUtils}
 
 trait EventServerRoutes extends Routeable with Directives with JavaTimeMarshalling with UuidUtils with SprayJsonSupport {
   def sessions: Sessions
 
   val pollSessionChannel: Route = {
     (get & path("events" / "session" / Segment ) & parameter('since.as[Instant].?)) { (sessionId, since) ⇒
-      onComplete(sessions.find(fromBase64(sessionId), since)) {
-        case Success(None) ⇒ complete(StatusCodes.NotFound)
-        case Success(Some(session)) ⇒ complete(session)
-        case Failure(t) ⇒ complete(StatusCodes.InternalServerError, t)
+      onSuccess(sessions.find(fromBase64(sessionId), since)) {
+        case None ⇒ complete(StatusCodes.NotFound)
+        case Some(session) ⇒ complete(session)
       }
     }
   }

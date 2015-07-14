@@ -15,9 +15,9 @@ trait Sessions {
     logger.trace(s"sessionId=$sessionId")
     val creator = SessionActor.human(UUID.randomUUID(), "kender")
     val sessionObjects: Set[SessionObject] = Set(
-      SessionObject.Say(UUID.randomUUID(), xml.Text("hello world"), Instant.now(), creator, Instant.now, creator, Map.empty),
-      SessionObject.Emote(UUID.randomUUID(), UUID.randomUUID(), Instant.now(), creator, Instant.now, creator, Map.empty),
-      SessionObject.Interactable(UUID.randomUUID(), UUID.randomUUID(), Geometry(1,2,3,math.Pi/2), Instant.now(), creator, Instant.now, creator, Map.empty)
+      SessionObject.Say(UUID.randomUUID(), xml.Text("hello world"), Instant.now(), creator, Instant.now, creator),
+      SessionObject.Emote(UUID.randomUUID(), UUID.randomUUID(), Instant.now(), creator, Instant.now, creator),
+      SessionObject.Interactable(UUID.randomUUID(), UUID.randomUUID(), Geometry(1,2,3,math.Pi/2), Instant.now(), creator, Instant.now, creator)
     )
     val state = SessionState(sessionObjects)
     val session = Session(sessionId, creator, Set(SessionParticipant(creator, Participation.Creator, Instant.now)), state)

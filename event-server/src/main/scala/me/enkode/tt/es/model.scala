@@ -49,21 +49,48 @@ sealed trait SessionObject extends Named {
   def createdBy: SessionActor
   def modifiedAt: Instant
   def modifiedBy: SessionActor
-  def meta: Meta
+  def expiresAt: Option[Instant]
+  def instance: JsObject
 }
 
 object SessionObject {
-  case class Interactable(id: SessionObjectId, assetId: AssetId, geometry: Geometry, createdAt: Instant, createdBy: SessionActor, modifiedAt: Instant, modifiedBy: SessionActor, meta: Meta) extends SessionObject
+  case class Interactable(
+    id: SessionObjectId,
+    assetId: AssetId, 
+    geometry: Geometry,
+    createdAt: Instant, createdBy: SessionActor, 
+    modifiedAt: Instant, modifiedBy: SessionActor,
+    expiresAt: Option[Instant] = None,
+    instance: JsObject = JsObject()) extends SessionObject
+
   object Interactable {
-    implicit val jsonFormatter = jsonFormat(Interactable.apply, "id", "assetId", "geometry", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "meta")
+    implicit val jsonFormatter = jsonFormat(Interactable.apply,
+      "id", "assetId", "geometry", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "expiresAt", "instance")
   }
-  case class Say(id: SessionObjectId, text: RichText, createdAt: Instant, createdBy: SessionActor, modifiedAt: Instant, modifiedBy: SessionActor, meta: Meta) extends SessionObject
+
+  case class Say(
+    id: SessionObjectId,
+    text: RichText,
+    createdAt: Instant, createdBy: SessionActor,
+    modifiedAt: Instant, modifiedBy: SessionActor,
+    expiresAt: Option[Instant] = None,
+    instance: JsObject = JsObject()) extends SessionObject
+
   object Say {
-    implicit val jsonFormatter = jsonFormat(Say.apply, "id", "text", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "meta")
+    implicit val jsonFormatter = jsonFormat(Say.apply,
+      "id", "text", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "expiresAt", "instance")
   }
-  case class Emote(id: SessionObjectId, assetId: AssetId, createdAt: Instant, createdBy: SessionActor, modifiedAt: Instant, modifiedBy: SessionActor, meta: Meta) extends SessionObject
+  case class Emote(
+    id: SessionObjectId,
+    assetId: AssetId,
+    createdAt: Instant, createdBy: SessionActor,
+    modifiedAt: Instant, modifiedBy: SessionActor,
+    expiresAt: Option[Instant] = None,
+    instance: JsObject = JsObject()) extends SessionObject
+
   object Emote {
-    implicit val jsonFormatter = jsonFormat(Emote.apply, "id", "assetId", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "meta")
+    implicit val jsonFormatter = jsonFormat(Emote.apply,
+      "id", "assetId", "createdAt", "createdBy", "modifiedAt", "modifiedBy", "expiresAt", "instance")
   }
 
   implicit object JsonFormat extends JsonFormat[SessionObject] {
@@ -91,7 +118,8 @@ object SessionObject {
 
 case class SessionState(objects: Set[SessionObject]) {
   def Δ(since: Instant): SessionState = {
-    copy(objects.filter(_.modifiedAt.isAfter(since)))
+    val now = Instant.now()
+    copy(objects.filter(o ⇒ o.modifiedAt.isAfter(since) && o.expiresAt.fold(true)(_.isBefore(now))))
   }
 }
 object SessionState {
@@ -119,7 +147,7 @@ object SessionParticipant {
 
 case class Session(id: SessionId, creator: SessionActor, participants: Set[SessionParticipant], state: SessionState) {
   def Δ(since: Instant): Session = {
-    copy(participants = participants.filter(_.joined isAfter since), state = (state Δ since))
+    copy(participants = participants.filter(_.joined isAfter since), state = state Δ since)
   }
 }
 object Session {
