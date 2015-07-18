@@ -1,4 +1,4 @@
-package me.enkode.tt.models
+package me.enkode.tt.http
 
 import java.nio.ByteBuffer
 import java.util.{Base64, UUID}

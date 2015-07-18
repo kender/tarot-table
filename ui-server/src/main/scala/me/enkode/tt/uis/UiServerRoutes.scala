@@ -20,4 +20,3 @@ object UiServerRoutes {
   class UiServerRoutesImpl() extends UiServerRoutes
   def apply(): UiServerRoutes = new UiServerRoutesImpl()
 }
-

@@ -25,10 +25,13 @@ trait μPickleSupport {
       jsValue
     }
 
+
   implicit def μPickleMarshallerConverter[T](writer: Writer[T]): ToEntityMarshaller[T] =
     μPickleMarshaller[T](writer)
+
   implicit def μPickleMarshaller[T](implicit writer: Writer[T]): ToEntityMarshaller[T] =
     μPickleValueMarshaller compose writer.write
+
   implicit def μPickleValueMarshaller(): ToEntityMarshaller[Js.Value] =
     Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(json.write)
 }

@@ -1,15 +1,21 @@
 package me.enkode.tt.models
 
+import upickle._
+
 trait Asset {
   def id: Id
 }
 
-trait Interactable { self: Asset ⇒  }
+trait Stateful { self: Asset ⇒
+  def initialState: Js.Obj
+}
 
-trait Card extends Asset with Interactable
+trait Interactive { self: Asset ⇒  }
 
-trait Deck extends Asset with Interactable
+trait Card extends Asset with Interactive
 
-trait Discard extends Asset with Interactable
+trait Deck extends Asset with Interactive
+
+trait Discard extends Asset with Interactive
 
 trait Emote extends Asset
