@@ -1,4 +1,29 @@
+lazy val `http-common` = project
+  .settings(
+    libraryDependencies ++= Seq(
+      Boilerplate.Modules.akka("http-experimental", Boilerplate.Modules.akkaStreamsVersion),
+      Boilerplate.Modules.μPickle,
+      Boilerplate.Modules.scala_xml
+    )
+  )
+lazy val `data-models` = crossProject
+  .settings()
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      Boilerplate.Modules.μPickle
+    )
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "upickle" % "0.3.4"
+    )
+  )
+
+lazy val `data-models-js` = `data-models`.js
+lazy val `data-models-jvm` = `data-models`.jvm
+
 lazy val `ui-client` = project
+  .dependsOn(`data-models-js`)
   .enablePlugins(ScalaJSPlugin)
   .settings(
     libraryDependencies ++= Seq(
@@ -6,18 +31,8 @@ lazy val `ui-client` = project
     )
   )
 
-lazy val `http-common` = project
-  .settings(
-    libraryDependencies ++= Seq(
-      Boilerplate.Modules.akka("http-experimental", "1.0-RC4"),
-      Boilerplate.Modules.spray_json,
-      Boilerplate.Modules.scala_xml
-    )
-  )
-
-
 lazy val `ui-server` = project
-  .dependsOn(`http-common`, `ui-client`)
+  .dependsOn(`http-common`, `ui-client`, `data-models-jvm`)
   .settings(
     gatherJavaScripts := {
       (org.scalajs.sbtplugin.ScalaJSPlugin.AutoImport.fullOptJS in(`ui-client`, Compile)).value
@@ -37,12 +52,10 @@ lazy val `ui-server` = project
 
 
 lazy val `event-server` = project
-  .dependsOn(`http-common`)
+  .dependsOn(`http-common`, `data-models-jvm`)
   .settings(
     libraryDependencies ++= Seq(
-      Boilerplate.Modules.akka("http-spray-json-experimental", Boilerplate.Modules.akkaStreamsVersion),
       Boilerplate.Modules.scala_xml,
-      Boilerplate.Modules.spray_json,
       Boilerplate.Modules.slf4j_api
     )
   )

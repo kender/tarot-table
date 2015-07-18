@@ -8,7 +8,7 @@ object Boilerplate extends AutoPlugin {
     organization := "enkode.me")
 
   object Modules {
-    val akkaStreamsVersion = "1.0-RC4"
+    val akkaStreamsVersion = "1.0"
     def akka(name: String, version: String = "2.3.12") = "com.typesafe.akka" %% s"akka-$name" % version
 
     def slf4j(name: String) = "org.slf4j" % s"slf4j-$name" % "1.7.10"
@@ -18,7 +18,8 @@ object Boilerplate extends AutoPlugin {
 
     lazy val scala_xml = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
 
-    lazy val spray_json = "io.spray" %%  "spray-json" % "1.3.2"
+//    lazy val spray_json = "io.spray" %%  "spray-json" % "1.3.2"
+    lazy val μPickle = "com.lihaoyi" %% "upickle" % "0.3.4"
 
     lazy val logging =
       slf4j_api :: logback :: Nil

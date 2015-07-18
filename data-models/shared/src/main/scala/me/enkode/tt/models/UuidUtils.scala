@@ -1,9 +1,7 @@
-package me.enkode.tt.http
+package me.enkode.tt.models
 
 import java.nio.ByteBuffer
 import java.util.{Base64, UUID}
-
-import spray.json.JsString
 
 trait UuidUtils {
   val longBytes = java.lang.Long.BYTES

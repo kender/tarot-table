@@ -3,6 +3,7 @@ package me.enkode.tt.es
 import java.time.Instant
 import java.util.UUID
 
+import me.enkode.tt.models.{AssetInstanceState, AssetInstance, Id, Session}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -11,19 +12,14 @@ trait Sessions {
   implicit def executionContext: ExecutionContext
   val logger = LoggerFactory.getLogger(classOf[Sessions])
 
-  def find(sessionId: SessionId, since: Option[Instant]): Future[Option[Session]] = Future {
-    logger.trace(s"sessionId=$sessionId")
-    val creator = SessionActor.human(UUID.randomUUID(), "kender")
-    val sessionObjects: Set[SessionObject] = Set(
-      SessionObject.Say(UUID.randomUUID(), xml.Text("hello world"), Instant.now(), creator, Instant.now, creator),
-      SessionObject.Emote(UUID.randomUUID(), UUID.randomUUID(), Instant.now(), creator, Instant.now, creator),
-      SessionObject.Interactable(UUID.randomUUID(), UUID.randomUUID(), Geometry(1,2,3,math.Pi/2), Instant.now(), creator, Instant.now, creator)
-    )
-    val state = SessionState(sessionObjects)
-    val session = Session(sessionId, creator, Set(SessionParticipant(creator, Participation.Creator, Instant.now)), state)
-
+  def find(sessionId: Id, since: Option[Instant]): Future[Option[Session]] = Future {
     Some {
-      since.fold(session)(session.Δ)
+      def nextId() = UUID.randomUUID()
+
+      val assetInstances = Set(
+        AssetInstance(nextId(), nextId(), AssetInstanceState())
+      )
+      Session(assetInstances)
     }
   }
 }
