@@ -13,7 +13,7 @@ import me.enkode.tt.models._
 
 import upickle.default._
 
-trait EventServerRoutes extends Routeable with Directives
+trait SessionRoutes extends Routeable with Directives
   with JavaTimeMarshalling with UuidUtils
   with μPickleSupport {
 
@@ -40,16 +40,25 @@ trait EventServerRoutes extends Routeable with Directives
     }
   }
 
+  val clearSession: Route = {
+    (post & path("session" / JavaUUID / "clear")) { (sessionId) ⇒
+      onSuccess(sessions.clear(sessionId)) {
+        case None ⇒ complete(StatusCodes.NotFound)
+        case Some(session) ⇒ complete(session)
+      }
+    }
+  }
+
   val nextUuid: Route = {
     (get & path("uuid")) {
       complete(UUID.randomUUID())
     }
   }
 
-  override def routes = pollSessionChannel :: instantiateAsset :: nextUuid :: Nil
+  override def routes = pollSessionChannel :: clearSession :: instantiateAsset :: nextUuid :: Nil
 }
 
-object EventServerRoutes {
-  class EventServerRoutesImpl(val sessions: Sessions)(implicit val actorSystem: ActorSystem) extends EventServerRoutes
-  def apply(sessions: Sessions)(implicit actorSystem: ActorSystem): EventServerRoutes = new EventServerRoutesImpl(sessions)
+object SessionRoutes {
+  class SessionRoutesImpl(val sessions: Sessions)(implicit val actorSystem: ActorSystem) extends SessionRoutes
+  def apply(sessions: Sessions)(implicit actorSystem: ActorSystem): SessionRoutes = new SessionRoutesImpl(sessions)
 }

@@ -1,8 +1,13 @@
 package me.enkode.tt
 
+import java.util.UUID
+
 import org.scalajs.dom
 
 package object uic {
+  implicit class StringHelpers(val string: String) extends AnyVal {
+    def uuid = UUID.fromString(string)
+  }
 
   implicit class ElementHelpers(val element: dom.Element) extends AnyVal {
     def setAttributes(attributes: Map[String, String]): dom.Element = {
@@ -31,6 +36,14 @@ package object uic {
       input.setAttributes(Map("id" → id, "type" → inputType))
       input
     }
+    
+    def removeElementById(elementId: String): Unit = {
+      Option(document.getElementById(elementId)) map { element ⇒
+        element.parentNode.removeChild(element)
+      }
+    }
+
+    def removeElementById(elementId: UUID): Unit = removeElementById(elementId.toString)
   }
 
   implicit class HTMLElementHelper(val htmlElement: dom.html.Element) extends AnyVal {
